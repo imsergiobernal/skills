@@ -27,6 +27,7 @@ claude plugin --help
 | Ubicación | Responsabilidad |
 | --- | --- |
 | `.claude-plugin/marketplace.json` | Identidad del marketplace y entradas de los plugins |
+| `src/` | Documentación, ejemplos y otros materiales en bruto |
 | `plugins/<plugin>/` | Archivos que componen un paquete instalable |
 | `plugins/<plugin>/.claude-plugin/plugin.json` | Nombre, versión y metadatos del plugin |
 | `plugins/<plugin>/skills/<skill>/SKILL.md` | Metadatos e instrucciones de una skill |
@@ -35,6 +36,8 @@ claude plugin --help
 | `docs/DEVELOPMENT.md` | Desarrollo y comprobaciones locales |
 
 El catálogo utiliza el formato Claude-compatible admitido por Codex. El identificador público del marketplace es `imsergiobernal-skills`.
+
+Utiliza `src/` para reunir materiales de partida. Al preparar un paquete, incorpora dentro de `plugins/<plugin>/` los recursos que necesite para su instalación y uso.
 
 ## Preparación inicial
 
@@ -48,6 +51,8 @@ npm ci
 ```
 
 La instalación activa el hook `commit-msg` mediante Husky. Commitlint comprueba el formato Conventional Commits, por ejemplo `fix(mi-plugin): corrige el saludo`. GitHub Actions comprueba también los mensajes de los commits de cada pull request y los enviados a `main`.
+
+El scope es opcional. Cuando se utiliza, sigue el formato `kebab-case`, con minúsculas y guiones. Por ejemplo, usa `docs(src): añade documentación` para material de partida y `feat(mi-plugin): añade una skill` para un plugin. Si incluyes varios ámbitos separados por `/` o `,`, commitlint comprueba el formato de cada uno.
 
 Consulta el estado de la copia local y el catálogo antes de modificarlo.
 
@@ -137,11 +142,33 @@ git diff --check
 
 La validación del manifiesto comprueba su formato y los campos declarados. Completa la revisión verificando las rutas, los recursos incluidos y el comportamiento de los scripts o integraciones que utilice el paquete.
 
-`check:versions` compara los archivos locales, incluidos los nuevos sin seguimiento, con `origin/main`. Para seleccionar otra base, usa `npm run check:versions -- --base <referencia>`. Revisa cada plugin afectado, su entrada de catálogo y una versión SemVer mayor que la de la base. Los plugins nuevos necesitan una versión válida. La versión se indica en `.claude-plugin/plugin.json` dentro del plugin; los metadatos opcionales de cada skill no afectan a esta comprobación.
+`check:versions` compara los archivos locales, incluidos los nuevos sin seguimiento, con `origin/main`. Para seleccionar otra base, usa `npm run check:versions -- --base <referencia>`. Revisa cada plugin afectado, su entrada de catálogo y una versión SemVer que no retroceda respecto a la base. Los plugins nuevos necesitan una versión válida. La versión se indica en `.claude-plugin/plugin.json` dentro del plugin; los metadatos opcionales de cada skill no afectan a esta comprobación.
 
-Para un cambio compatible que corrige un fallo, incrementa `patch`; para una funcionalidad compatible, incrementa `minor`; para una modificación incompatible, incrementa `major`. Las versiones `0.x` corresponden al desarrollo inicial. El autor elige el incremento y explica su alcance en el pull request.
+Los cambios exclusivos en `src/` quedan fuera de la comprobación y del versionado de plugins. Cuando el material se incorpora a un plugin, el commit que modifica ese paquete determina el incremento.
 
 GitHub Actions ejecuta las comprobaciones en los pull requests y después de los pushes a `main`. Para impedir la integración cuando fallen, configura la comprobación como requerida en las reglas de la rama. Los commits directos a `main` se comprueban después del push.
+
+## Versiones y releases
+
+Cada plugin tiene su propia versión en `plugins/<plugin>/.claude-plugin/plugin.json`. Las skills incluidas se publican con la versión de su plugin; no se versionan de forma independiente. Para un plugin nuevo, asigna una versión inicial SemVer, por ejemplo `0.1.0`. No incluyas `version` en su entrada del catálogo: los clientes deben leer la versión del manifiesto del plugin.
+
+Al integrar cambios en `main`, GitHub Actions ejecuta [Release Please](https://github.com/googleapis/release-please). La herramienta identifica los plugins afectados por las rutas modificadas y prepara un pull request conjunto con las nuevas versiones, un `CHANGELOG.md` por plugin y el registro `.release-please-manifest.json`. El nombre del scope es orientativo; lo que determina los plugins afectados son los archivos del commit. Si un commit afecta a varios plugins, su tipo se aplica a todos ellos.
+
+| Commit que modifica un plugin | Incremento |
+| --- | --- |
+| `fix(plugin): ...` | Patch: `1.2.3` → `1.2.4` |
+| `feat(plugin): ...` | Minor: `1.2.3` → `1.3.0` |
+| `feat(plugin)!: ...` o cuerpo con `BREAKING CHANGE:` | Major: `1.2.3` → `2.0.0` |
+| Otros tipos convencionales admitidos, como `docs`, `refactor` o `chore` | Patch |
+
+Se aplica el incremento más alto de los commits pendientes. También se aplica major a los cambios incompatibles en `0.x`. La primera propuesta usa la versión inicial del manifiesto como base y aplica el incremento del commit que incorpora el plugin; por ejemplo, un `feat` sobre `0.1.0` propone `0.2.0`.
+
+1. Abre un pull request con commits convencionales y revisa el tipo y la compatibilidad de cada cambio. Si utilizas squash, el mensaje resultante también debe seguir Conventional Commits e incluir `!` o `BREAKING CHANGE:` cuando corresponda. Un squash que agrupe varios plugins aplicará el mismo tipo a todos los afectados.
+2. Integra el pull request en `main`. Release Please abre o actualiza el pull request de release. El contenido del plugin ya está en `main` mientras la versión anterior sigue vigente, hasta que se integre el pull request de release.
+3. Revisa las versiones y los changelogs. Aprueba la ejecución de las comprobaciones si GitHub lo solicita y, cuando estén correctas, integra el pull request de release.
+4. Actions crea un tag y una GitHub Release por plugin, por ejemplo `mi-plugin-v1.3.0`. Los usuarios pueden actualizar el marketplace para obtener los cambios de `main`.
+
+El repositorio debe tener activada en **Settings → Actions → General → Workflow permissions** la opción **Allow GitHub Actions to create and approve pull requests**. Si el pull request lo crea `GITHUB_TOKEN`, GitHub puede dejar sus comprobaciones pendientes de aprobación; consulta [la documentación de GitHub](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow). La automatización necesita permisos de escritura sobre contenidos, pull requests e issues para crear releases y gestionar etiquetas.
 
 ## Probar la instalación local
 
@@ -200,7 +227,7 @@ Verifica el resultado esperado, el acceso a los recursos del paquete y los error
 
 ## Probar una actualización
 
-Incrementa la versión en el manifiesto cuando modifiques el contenido del plugin. Para refrescar una instalación existente desde la copia local, ejecuta el comando de tu cliente con el perfil en el que esté instalado.
+Para probar una actualización de forma local antes del release, utiliza un perfil de pruebas y, si el cliente necesita detectar una versión distinta, incrementa temporalmente la versión del manifiesto en esa copia. La versión definitiva la prepara el pull request de release. Ejecuta el comando de tu cliente con el perfil en el que esté instalado.
 
 ```shell
 codex plugin add mi-plugin@imsergiobernal-skills

@@ -22,11 +22,14 @@ Clona tu fork o el repositorio y crea una rama para la contribución. La guía d
 | Área | Ubicación | Qué modificar |
 | --- | --- | --- |
 | Catálogo | `.claude-plugin/marketplace.json` | Entradas que permiten descubrir e instalar los plugins |
+| Material en bruto | `src/` | Documentación, ejemplos y otros materiales de partida |
 | Paquetes | `plugins/` | Manifiestos, skills y recursos de cada plugin |
 | Presentación pública | `README.md` | Propósito, catálogo y uso del marketplace |
 | Documentación de desarrollo | `docs/DEVELOPMENT.md` | Preparación, ejemplos y comprobaciones locales |
 
 Cada plugin ocupa una carpeta independiente. Sus scripts, referencias y assets forman parte del paquete que se instala.
+
+Guarda en `src/` los materiales en bruto. Cuando prepares un plugin a partir de ellos, incorpora los archivos que necesite dentro de su carpeta en `plugins/`.
 
 ## Implementa el cambio
 
@@ -35,7 +38,7 @@ Cada plugin ocupa una carpeta independiente. Sus scripts, referencias y assets f
 - Escribe las instrucciones y la documentación propia en español. Conserva los identificadores y comandos técnicos con su nombre original.
 - Incluye los recursos que necesita el paquete y documenta sus herramientas, dependencias y configuración.
 - Indica los clientes compatibles y prueba los componentes que dependan de un cliente concreto, como integraciones MCP o hooks.
-- Incrementa la versión del plugin cuando cambie su contenido y documenta los cambios que afecten a su uso.
+- Elige una versión inicial para cada plugin nuevo y documenta los cambios que afecten a su uso. Las actualizaciones posteriores las prepara automáticamente Release Please.
 - Conserva los avisos y las licencias de los recursos de terceros e indica su procedencia.
 
 La guía de desarrollo contiene un ejemplo completo de manifiesto, skill y entrada de catálogo. [Crear un plugin](docs/DEVELOPMENT.md#crear-un-plugin)
@@ -68,7 +71,9 @@ Puedes utilizar los perfiles temporales de la guía para comprobar la instalaci�
 
 Revisa el contenido que vas a compartir para excluir credenciales, archivos de configuración personal y resultados temporales de las pruebas.
 
-Elige el incremento `major`, `minor` o `patch` según la compatibilidad del cambio y explícalo en la propuesta. La comprobación verifica el formato y que la versión avance, y la revisión valora el tipo de incremento.
+El scope es opcional. Si lo incluyes, usa minúsculas y guiones, por ejemplo `docs(src): añade documentación`, `ci(validacion): comprueba el catálogo` o `fix(mi-plugin): corrige el saludo`. Puedes usar el nombre del plugin o un área del repositorio como `src`, `catalogo` o `documentacion`. Commitlint también admite varios ámbitos separados por `/` o `,` y comprueba el formato de cada uno.
+
+Escribe el tipo de commit de acuerdo con el cambio: `feat` prepara un incremento minor, `fix` uno patch y `!` o `BREAKING CHANGE:` uno major. Los demás tipos admitidos también preparan un patch cuando afectan a un plugin. El tipo debe describir correctamente el cambio para que la versión sea adecuada. [Proceso de release](docs/DEVELOPMENT.md#versiones-y-releases)
 
 ## Comunica un fallo
 

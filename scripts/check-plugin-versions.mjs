@@ -44,6 +44,15 @@ try {
     if (typeof entry.source !== 'string' || (!entry.source.startsWith('./') && entry.source !== '.')) continue;
     const target = path.resolve(root, entry.source);
     const relative = path.relative(root, target);
+    const parts = relative.split(path.sep);
+    if (parts[0] === 'plugins') {
+      if (parts.length !== 2 || entry.source !== `./plugins/${parts[1]}`) {
+        throw new Error(`${entry.name}: usa la ruta canónica ./plugins/<nombre> en el catálogo`);
+      }
+      if ('version' in entry) {
+        throw new Error(`${entry.name}: elimina la versión del catálogo; se usa la del manifiesto del plugin`);
+      }
+    }
     if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
       throw new Error(`${entry.name}: la ruta del catálogo sale del repositorio`);
     }
@@ -82,8 +91,8 @@ try {
     }
     const oldVersion = readJson(`${base}:${manifestPath}`, previous.stdout).version;
     if (!validVersion(oldVersion)) throw new Error(`${name}: la versión base no es SemVer válida: ${oldVersion}`);
-    if (!semver.gt(manifest.version, oldVersion)) {
-      throw new Error(`${name}: incrementa la versión del plugin (${oldVersion} → ${manifest.version})`);
+    if (semver.lt(manifest.version, oldVersion)) {
+      throw new Error(`${name}: la versión no puede retroceder (${oldVersion} → ${manifest.version})`);
     }
     console.log(`${name}: ${oldVersion} → ${manifest.version}`);
   }

@@ -37,12 +37,11 @@ function fixture(t) {
   return { directory, write, writeJson, manifest, catalog, git, check };
 }
 
-test('detecta cambios sin incrementar la versión y acepta un incremento', t => {
+test('acepta cambios pendientes de release y un incremento de versión', t => {
   const f = fixture(t);
   f.write('plugins/alpha/skills/example/SKILL.md', 'changed\n');
   let result = f.check();
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /incrementa la versión/);
+  assert.equal(result.status, 0, result.stderr);
   f.writeJson(f.manifest, { name: 'alpha', version: '1.2.4' });
   result = f.check();
   assert.equal(result.status, 0, result.stderr);
@@ -53,13 +52,20 @@ test('detecta recursos nuevos sin seguimiento', t => {
   const f = fixture(t);
   f.write('plugins/alpha/skills/example/references/new.md', 'new\n');
   const result = f.check();
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /incrementa la versión/);
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('permite añadir material en bruto sin incrementar versiones', t => {
+  const f = fixture(t);
+  f.write('src/references/example.md', 'material en bruto\n');
+  const result = f.check();
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /No hay cambios en plugins/);
 });
 
 test('rechaza versiones inválidas y retrocesos', t => {
   const f = fixture(t);
-  for (const version of ['v1.2.4', '1.2', '1.2.2', '1.2.3+build', '1.2.4\n']) {
+  for (const version of ['v1.2.4', '1.2', '1.2.2', '1.2.4\n']) {
     f.writeJson(f.manifest, { name: 'alpha', version });
     const result = f.check();
     assert.equal(result.status, 1, version);
@@ -98,7 +104,7 @@ test('detecta un plugin nuevo sin entrada en el catálogo', t => {
   assert.match(result.stderr, /falta la entrada del plugin/);
 });
 
-test('exige un incremento para cada plugin afectado', t => {
+test('detecta retrocesos en cada plugin afectado', t => {
   const f = fixture(t);
   f.writeJson('plugins/beta/.claude-plugin/plugin.json', { name: 'beta', version: '1.0.0' });
   f.write('plugins/beta/skills/example/SKILL.md', 'initial\n');
@@ -111,9 +117,10 @@ test('exige un incremento para cada plugin afectado', t => {
   f.write('plugins/alpha/skills/example/SKILL.md', 'changed\n');
   f.writeJson(f.manifest, { name: 'alpha', version: '1.2.4' });
   f.write('plugins/beta/skills/example/SKILL.md', 'changed\n');
+  f.writeJson('plugins/beta/.claude-plugin/plugin.json', { name: 'beta', version: '0.9.0' });
   const result = f.check();
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /beta: incrementa la versión/);
+  assert.match(result.stderr, /beta: la versión no puede retroceder/);
 });
 
 test('permite eliminar un plugin si se retira su entrada', t => {
