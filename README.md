@@ -12,7 +12,7 @@ Necesitas Git y una versión de tu cliente que incluya los comandos de plugins.
 
 ```shell
 codex plugin marketplace add imsergiobernal/skills
-codex plugin list --marketplace imsergiobernal-skills
+codex plugin list --marketplace imsergiobernal-skills --available --json
 ```
 
 ### Claude Code
