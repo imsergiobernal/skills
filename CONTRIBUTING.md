@@ -13,7 +13,7 @@ Puedes utilizar las issues para comunicar fallos, sugerir nuevas skills o coment
 
 ## Prepara el entorno
 
-Instala Git y el cliente en el que vayas a probar el paquete. Claude Code proporciona el comando `claude plugin validate` para comprobar los manifiestos.
+Instala Git, Node.js 22.12 o posterior, npm y el cliente en el que vayas a probar el paquete. Claude Code proporciona el comando `claude plugin validate` para comprobar los manifiestos. Ejecuta `npm ci` en la raíz para instalar las comprobaciones y activar el hook de mensajes de commit.
 
 Clona tu fork o el repositorio y crea una rama para la contribución. La guía de desarrollo incluye los comandos de preparación y los ejemplos de perfiles temporales. [Preparación inicial](docs/DEVELOPMENT.md#preparación-inicial)
 
@@ -45,6 +45,8 @@ La guía de desarrollo contiene un ejemplo completo de manifiesto, skill y entra
 Ejecuta los comandos desde la raíz del repositorio. Sustituye `nombre-del-plugin` por el nombre del paquete afectado.
 
 ```shell
+npm run check:versions
+npm test
 claude plugin validate ./plugins/nombre-del-plugin
 claude plugin validate .
 git diff --check
@@ -52,17 +54,21 @@ git diff --check
 
 Comprueba que el plugin se instala, que sus skills se descubren y que el flujo de trabajo descrito funciona en los clientes declarados. Si modificas scripts, ejecútalos con entradas representativas y revisa sus resultados. Para una corrección, reproduce el fallo y verifica el comportamiento corregido.
 
+La comprobación de versiones compara los archivos locales con `origin/main`. Actualiza la referencia con `git fetch origin main` antes de ejecutarla y usa `npm run check:versions -- --base <referencia>` si necesitas otra base. GitHub Actions ejecuta la comprobación con la rama de destino de cada pull request.
+
 Puedes utilizar los perfiles temporales de la guía para comprobar la instalación. [Pruebas locales](docs/DEVELOPMENT.md#probar-la-instalación-local)
 
 ## Prepara la propuesta de cambios
 
 1. Revisa `git status` y el diff. Selecciona expresamente los archivos de la contribución.
-2. Agrupa los cambios en commits cuyos mensajes expliquen su propósito.
+2. Agrupa los cambios en commits con formato Conventional Commits, por ejemplo `fix(mi-plugin): corrige el saludo` o `feat(mi-plugin): añade una skill`. Usa `!` o `BREAKING CHANGE:` para los cambios incompatibles.
 3. Describe en el pull request el problema, el comportamiento resultante y los plugins o documentos afectados. Enlaza la issue relacionada si existe.
 4. Indica los comandos de validación ejecutados y sus resultados. Explica las comprobaciones pendientes y el requisito que impidió realizarlas.
 5. Incluye un ejemplo de uso y señala los cambios de configuración, dependencias o compatibilidad que deba conocer quien revise la propuesta.
 
 Revisa el contenido que vas a compartir para excluir credenciales, archivos de configuración personal y resultados temporales de las pruebas.
+
+Elige el incremento `major`, `minor` o `patch` según la compatibilidad del cambio y explícalo en la propuesta. La comprobación verifica el formato y que la versión avance, y la revisión valora el tipo de incremento.
 
 ## Comunica un fallo
 

@@ -5,6 +5,7 @@ Sigue esta guía para preparar una copia local, crear un plugin y validar su ins
 ## Requisitos
 
 - Instala Git para clonar el repositorio y revisar los cambios.
+- Instala Node.js 22.12 o posterior y npm para ejecutar las comprobaciones del repositorio.
 - Utiliza una versión de Codex o Claude Code que incluya los comandos `plugin` y `plugin marketplace`.
 - Utiliza Claude Code para ejecutar `claude plugin validate`.
 - Prepara las herramientas y dependencias adicionales que necesite el plugin que vayas a modificar.
@@ -13,6 +14,8 @@ Comprueba los clientes que vayas a utilizar y consulta la ayuda de sus comandos.
 
 ```shell
 git --version
+node --version
+npm --version
 codex --version
 codex plugin --help
 claude --version
@@ -41,7 +44,10 @@ Clona el repositorio y crea una rama para el cambio. Si contribuyes desde un for
 git clone https://github.com/imsergiobernal/skills.git
 cd skills
 git switch -c feat/nueva-skill
+npm ci
 ```
+
+La instalación activa el hook `commit-msg` mediante Husky. Commitlint comprueba el formato Conventional Commits, por ejemplo `fix(mi-plugin): corrige el saludo`. GitHub Actions comprueba también los mensajes de los commits de cada pull request y los enviados a `main`.
 
 Consulta el estado de la copia local y el catálogo antes de modificarlo.
 
@@ -121,12 +127,21 @@ Conserva la identidad del marketplace y las entradas existentes. El `name` de la
 Comprueba el plugin y el catálogo después de crear o modificar un paquete.
 
 ```shell
+git fetch origin main
+npm run check:versions
+npm test
 claude plugin validate ./plugins/mi-plugin
 claude plugin validate .
 git diff --check
 ```
 
 La validación del manifiesto comprueba su formato y los campos declarados. Completa la revisión verificando las rutas, los recursos incluidos y el comportamiento de los scripts o integraciones que utilice el paquete.
+
+`check:versions` compara los archivos locales, incluidos los nuevos sin seguimiento, con `origin/main`. Para seleccionar otra base, usa `npm run check:versions -- --base <referencia>`. Revisa cada plugin afectado, su entrada de catálogo y una versión SemVer mayor que la de la base. Los plugins nuevos necesitan una versión válida. La versión se indica en `.claude-plugin/plugin.json` dentro del plugin; los metadatos opcionales de cada skill no afectan a esta comprobación.
+
+Para un cambio compatible que corrige un fallo, incrementa `patch`; para una funcionalidad compatible, incrementa `minor`; para una modificación incompatible, incrementa `major`. Las versiones `0.x` corresponden al desarrollo inicial. El autor elige el incremento y explica su alcance en el pull request.
+
+GitHub Actions ejecuta las comprobaciones en los pull requests y después de los pushes a `main`. Para impedir la integración cuando fallen, configura la comprobación como requerida en las reglas de la rama. Los commits directos a `main` se comprueban después del push.
 
 ## Probar la instalación local
 
