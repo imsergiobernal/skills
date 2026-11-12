@@ -1,6 +1,6 @@
 {
   "name": "workshop-utils",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Herramientas para buscar y reproducir bugs con informes, parches Git y capturas.",
   "author": {
     "name": "Sergio Bernal"
