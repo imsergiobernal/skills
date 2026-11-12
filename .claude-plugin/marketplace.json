@@ -1,0 +1,9 @@
+{
+  "name": "imsergiobernal-skills",
+  "description": "Skills y plugins de Sergio Bernal para Codex y Claude Code.",
+  "owner": {
+    "name": "Sergio Bernal",
+    "url": "https://github.com/imsergiobernal"
+  },
+  "plugins": []
+}
