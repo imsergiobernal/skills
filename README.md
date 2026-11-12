@@ -10,7 +10,11 @@ Una skill reúne instrucciones y recursos para realizar una tarea de forma reuti
 
 ## Catálogo
 
-El proyecto está en su fase inicial y el catálogo público todavía está vacío. Los primeros paquetes se incorporarán al directorio `plugins/`.
+| Plugin | Descripción |
+| --- | --- |
+| [workshop-utils](plugins/workshop-utils/) | Herramientas para buscar y reproducir bugs, con informes, parches Git y capturas. |
+
+El directorio [src/](src/) reúne documentación, ejemplos y otros materiales en bruto que pueden servir para preparar nuevos paquetes.
 
 [Consultar el catálogo](.claude-plugin/marketplace.json) · [Explorar los paquetes](plugins/)
 
@@ -40,7 +44,7 @@ También puedes ejecutar `/plugin marketplace add imsergiobernal/skills` dentro 
 
 ### Instalar un paquete
 
-Cuando haya plugins publicados, sustituye `nombre-del-plugin` por el nombre de una entrada del catálogo y ejecuta el comando de tu cliente.
+Sustituye `nombre-del-plugin` por el nombre de una entrada del catálogo y ejecuta el comando de tu cliente.
 
 ```shell
 # Codex
@@ -51,6 +55,8 @@ codex plugin add nombre-del-plugin@imsergiobernal-skills
 # Claude Code
 claude plugin install nombre-del-plugin@imsergiobernal-skills
 ```
+
+En Claude Code también puedes instalar `workshop-utils` dentro de una sesión con `/plugin install workshop-utils --marketplace imsergiobernal/skills`.
 
 Inicia una nueva sesión para utilizar las skills instaladas. El identificador del marketplace es `imsergiobernal-skills`.
 

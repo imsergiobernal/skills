@@ -5,5 +5,11 @@
     "name": "Sergio Bernal",
     "url": "https://github.com/imsergiobernal"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "workshop-utils",
+      "source": "./plugins/workshop-utils",
+      "description": "Herramientas para buscar y reproducir bugs con informes, parches Git y capturas."
+    }
+  ]
 }

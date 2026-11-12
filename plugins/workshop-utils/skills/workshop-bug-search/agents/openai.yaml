@@ -1,0 +1,3 @@
+interface:
+  display_name: "Workshop Bug Search"
+  short_description: "Busca bugs con informes, parches y capturas"
